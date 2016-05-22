@@ -16,26 +16,29 @@ app.get('/', function(req, res) {
 
 // GET /todos?completed=true&q=house
 app.get('/todos', function(req, res) {
-    var queryParams = req.query;
-    var filteredTodos  = todos;
+    var query = req.query;
+    var where = {};
 
-    if(queryParams.hasOwnProperty('completed')) {
-        if (queryParams.completed === 'true') {
-            filteredTodos = _.where(filteredTodos, {completed: true});
-        } else if(queryParams.completed === 'false') {
-            filteredTodos = _.where(filteredTodos, {completed: false});
-        } else {
-            return res.status(400).send();
+    if(query.hasOwnProperty('completed')) {
+        if (query.completed === 'true') {
+            where.completed = true;
+        } else if (query.completed === 'false') {
+            where.completed = false;
         }
     }
 
-    if(queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
-        filteredTodos = _.filter(filteredTodos, function(todo) {
-            return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
-        })
+    if(query.hasOwnProperty('q') && query.q.length > 0) {
+        where.description = { $like: '%' + query.q + '%' };
     }
 
-    res.json(filteredTodos);
+    db.Todo.findAll({where: where}).then(
+        function(todos) {
+            res.json(todos);
+        },
+        function(e) {
+            res.status(500).send();
+        }
+    );
 });
 
 app.get('/todos/:id', function(req, res) {
@@ -49,9 +52,6 @@ app.get('/todos/:id', function(req, res) {
             res.status(500).send();
         }
     );
-    // var matchedTodo = _.findWhere(todos, {id : todoId});
-    //
-    // (matchedTodo) ? res.json(matchedTodo) : res.status(404).send();
 });
 
 // POST /todos
@@ -65,20 +65,6 @@ app.post('/todos', function(req, res){
         function(todo) { res.json(todo); }, 
         function(e) { res.status(400).json(e); }
     );
-    // call create on db.Todo
-    //  respond with 200 and todo
-    //  fail error e.toJSON() error
-    
-    // if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
-    //     return res.status(400).send();
-    // }
-    //
-    // body.description = body.description.trim();
-    //
-    // body.id = todoNextId++;
-    // todos.push(body);
-    //
-    // res.json(body);
 });
 
 // PUT /todos/:id
