@@ -30,15 +30,15 @@ sequelize.sync({
         else
             console.log('Todo not found');
     });
-    // Todo.create({
+    // todo.create({
     //     description: 'Take out the trash'
     // }).then(function(todo) {
-    //    return Todo.create({
+    //    return todo.create({
     //        description: 'Clean office'
     //    })
     // }).then(function() {
-    //     // return Todo.findById(2);
-    //     return Todo.findAll({
+    //     // return todo.findById(2);
+    //     return todo.findAll({
     //        where: {
     //            description: {
     //                $like: '%Office%'

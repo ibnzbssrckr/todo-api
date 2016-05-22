@@ -31,7 +31,7 @@ app.get('/todos', function(req, res) {
         where.description = { $like: '%' + query.q + '%' };
     }
 
-    db.Todo.findAll({where: where}).then(
+    db.todo.findAll({where: where}).then(
         function(todos) {
             res.json(todos);
         },
@@ -44,7 +44,7 @@ app.get('/todos', function(req, res) {
 app.get('/todos/:id', function(req, res) {
     var todoId = parseInt(req.params.id, 10);
 
-    db.Todo.findById(todoId).then(
+    db.todo.findById(todoId).then(
         function(todo) {
             (!!todo) ? res.json(todo.toJSON()) : res.status(404).send();
         },
@@ -58,7 +58,7 @@ app.get('/todos/:id', function(req, res) {
 app.post('/todos', function(req, res){
     var body = _.pick(req.body, 'description', 'completed');
 
-    db.Todo.create({
+    db.todo.create({
         description: body.description.trim(),
         completed: body.completed
     }).then(
@@ -70,29 +70,32 @@ app.post('/todos', function(req, res){
 // PUT /todos/:id
 app.put('/todos/:id', function(req, res) {
     var todoId = parseInt(req.params.id, 10);
-    var matchedTodo = _.findWhere(todos, {id : todoId});
-    if (!matchedTodo) {
-        return res.status(404).send();
-    }
-
     var body = _.pick(req.body, 'description', 'completed');
+    var attributes = {};
 
-    var validAttributes = {};
-    if(body.hasOwnProperty('completed') && _.isBoolean(body.completed)){
-        validAttributes.completed = body.completed;
-    } else if(body.hasOwnProperty('completed')) {
-        return res.status(400).send();
+    if(body.hasOwnProperty('completed')){
+        attributes.completed = body.completed;
     }
 
-    if(body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) {
-        validAttributes.description = body.description.trim();
-    } else if (body.hasOwnProperty('description')) {
-        return res.status(400).send();
+    if(body.hasOwnProperty('description')) {
+        attributes.description = body.description.trim();
     }
 
-    _.extend(matchedTodo, validAttributes);
-
-    res.json(matchedTodo);
+    db.todo.findById(todoId).then(
+        function(todo){
+            if(todo){
+                return todo.update(attributes);
+            } else {
+                res.sendStatus(404);
+            }
+        },
+        function() {
+            res.sendStatus(500);
+        }).then(
+        function(todo){
+            res.json(todo.toJSON());
+        },
+        function(e) { res.sendStatus(400).json(e); });
 });
 
 // DELETE /todos/:id
@@ -100,7 +103,7 @@ app.delete('/todos/:id', function(req, res) {
 
     var todoId = parseInt(req.params.id, 10);
 
-    db.Todo.destroy({where: { id: todoId }}).then(
+    db.todo.destroy({where: { id: todoId }}).then(
         function(rowsDeleted) {
             if (rowsDeleted === 0) {
                 res.status(400).json({
