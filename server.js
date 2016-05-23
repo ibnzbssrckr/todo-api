@@ -124,12 +124,12 @@ app.post('/users/', function(req, res) {
         email: body.email.trim(),
         password: body.password
     }).then(
-        function(user) { res.json(user.toJSON()); },
+        function(user) { res.json(user.toPublicJSON()); },
         function(e) { res.status(400).json(e); }
     );
 });
 
-db.sequelize.sync().then(function(){
+db.sequelize.sync({force: true}).then(function(){
     app.listen(PORT, function() {
         console.log('Express listening on port ' + PORT + '!');
     });
