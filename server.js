@@ -19,7 +19,7 @@ app.get('/', function(req, res) {
 // GET /todos?completed=true&q=house
 app.get('/todos', middleware.requireAuthentication, function(req, res) {
     var query = req.query;
-    var where = {};
+    var where = {userId: req.user.get('id')};
 
     if(query.hasOwnProperty('completed')) {
         if (query.completed === 'true') {
@@ -46,7 +46,7 @@ app.get('/todos', middleware.requireAuthentication, function(req, res) {
 app.get('/todos/:id', middleware.requireAuthentication, function(req, res) {
     var todoId = parseInt(req.params.id, 10);
 
-    db.todo.findById(todoId).then(
+    db.todo.findOne({where: { id: todoId, userId: req.user.get('id') }}).then(
         function(todo) {
             (!!todo) ? res.json(todo.toJSON()) : res.status(404).send();
         },
@@ -89,7 +89,7 @@ app.put('/todos/:id', middleware.requireAuthentication, function(req, res) {
         attributes.description = body.description.trim();
     }
 
-    db.todo.findById(todoId).then(
+    db.todo.findOne({ where: { id: todoId, userId: req.user.get('id')} }).then(
         function(todo){
             if(todo){
                 return todo.update(attributes);
@@ -111,11 +111,11 @@ app.delete('/todos/:id', middleware.requireAuthentication, function(req, res) {
 
     var todoId = parseInt(req.params.id, 10);
 
-    db.todo.destroy({where: { id: todoId }}).then(
+    db.todo.destroy({where: { id: todoId, userId: req.user.get('id') }}).then(
         function(rowsDeleted) {
             if (rowsDeleted === 0) {
                 res.status(400).json({
-                    "error" : "no todo found with that id"});
+                    "error" : "no todo found with that id for this user"});
             } else {
                 res.sendStatus(204);
             }
@@ -154,7 +154,7 @@ app.post('/users/login', function(req, res) {
     });
 });
 
-db.sequelize.sync({force: true}).then(function(){
+db.sequelize.sync(/*{force: true}*/).then(function(){
     app.listen(PORT, function() {
         console.log('Express listening on port ' + PORT + '!');
     });
