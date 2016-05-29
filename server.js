@@ -36,7 +36,7 @@ app.get('/todos', middleware.requireAuthentication, function(req, res) {
             res.json(todos);
         },
         function(e) {
-            res.status(500).send();
+            res.status(500).json(e);
         }
     );
 });
@@ -49,7 +49,7 @@ app.get('/todos/:id', middleware.requireAuthentication, function(req, res) {
             (!!todo) ? res.json(todo.toJSON()) : res.status(404).send();
         },
         function(e) {
-            res.status(500).send();
+            res.status(500).json(e);
         }
     );
 });
@@ -150,8 +150,8 @@ app.post('/users/login', function(req, res) {
         } else {
             return res.sendStatus(401);
         }
-    }, function() {
-        return res.sendStatus(401);
+    }, function(e) {
+        return res.sendStatus(401).json(e);
     });
 });
 if (process.env.NODE_ENV !== 'testing')
