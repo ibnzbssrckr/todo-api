@@ -154,10 +154,13 @@ app.post('/users/login', function(req, res) {
         return res.sendStatus(401);
     });
 });
-
-db.sequelize.sync(/*{force: true}*/).then(function(){
-    app.listen(PORT, function() {
-        console.log('Express listening on port ' + PORT + '!');
+if (process.env.NODE_ENV !== 'testing')
+{
+    db.sequelize.sync().then(function(){
+        app.listen(PORT, function() {
+            console.log('Express listening on port ' + PORT + '!');
+        });
     });
-});
+}
 
+module.exports = app;
