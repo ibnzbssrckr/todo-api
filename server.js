@@ -82,7 +82,6 @@ app.put('/todos/:id', middleware.requireAuthentication, function(req, res) {
     if(body.hasOwnProperty('completed')){
         attributes.completed = body.completed;
     }
-
     if(body.hasOwnProperty('description')) {
         attributes.description = body.description.trim();
     }
@@ -92,7 +91,7 @@ app.put('/todos/:id', middleware.requireAuthentication, function(req, res) {
             if(todo){
                 return todo.update(attributes);
             } else {
-                res.sendStatus(404);
+                return res.sendStatus(404);
             }
         },
         function() {
