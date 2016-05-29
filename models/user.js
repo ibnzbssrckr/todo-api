@@ -76,7 +76,7 @@ module.exports = function(sequelize, DataTypes) {
 
                             return resolve(user);
                         }, function(e) {
-                            return reject();
+                            return reject(e);
                         }
                     );
                 });
