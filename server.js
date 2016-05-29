@@ -148,7 +148,7 @@ app.post('/users/login', function(req, res) {
         if(token){
             return res.header('Auth', token).json(user.toPublicJSON());
         } else {
-            return res.sendStatus(401);
+            return res.sendStatus(500);
         }
     }, function(e) {
         return res.sendStatus(401).json(e);
