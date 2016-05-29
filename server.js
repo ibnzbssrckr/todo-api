@@ -86,21 +86,21 @@ app.put('/todos/:id', middleware.requireAuthentication, function(req, res) {
         attributes.description = body.description.trim();
     }
 
-    db.todo.findOne({ where: { id: todoId, userId: req.user.get('id')} }).then(
-        function(todo){
-            if(todo){
-                return todo.update(attributes);
-            } else {
-                return res.sendStatus(404);
-            }
-        },
-        function() {
-            res.sendStatus(500);
-        }).then(
-        function(todo){
-            res.json(todo.toJSON());
-        },
-        function(e) { res.sendStatus(400).json(e); });
+    db.todo.findOne({ where: { id: todoId, userId: req.user.get('id')} })
+        .then(
+            function(todo){
+                if(todo){
+                    todo.update(attributes)
+                        .then(function(todo) {      // Success
+                            res.json(todo.toJSON());
+                        }, function(e) {            // User sent bad data
+                            res.sendStatus(400).json(e);
+                        });
+                } else {
+                    res.sendStatus(404);    // Post not found
+                }
+            }, function() { return res.sendStatus(500); }   // something else went wrong
+        );
 });
 
 // DELETE /todos/:id
