@@ -99,10 +99,10 @@ module.exports = function(sequelize, DataTypes) {
                                 reject();
                             }
                         }, function(e) {
-                           reject();
+                           reject(e);
                         });
                     } catch(e) {
-
+                        reject(e);
                     }
                 });
             }
