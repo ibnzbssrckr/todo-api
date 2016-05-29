@@ -14,9 +14,6 @@ module.exports = function(sequelize, DataTypes) {
                 isEmail: true
             }
         },
-        salt: {
-            type: DataTypes.STRING
-        },
         password_hash: {
             type: DataTypes.STRING
         },
@@ -27,11 +24,9 @@ module.exports = function(sequelize, DataTypes) {
                 len: [7,100]
             },
             set: function(value) {
-                var salt = bcrypt.genSaltSync();
-                var hashedPassword = bcrypt.hashSync(value, salt);
+                var hashedPassword = bcrypt.hashSync(value, bcrypt.genSaltSync());
 
                 this.setDataValue('password', value);
-                this.setDataValue('salt', salt);
                 this.setDataValue('password_hash', hashedPassword);
             }
         }
