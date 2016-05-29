@@ -47,7 +47,7 @@ module.exports = function(sequelize, DataTypes) {
                 return _.pick(json, ['id', 'email', 'createdAt', 'updatedAt']);
             },
             generateToken: function(type) {
-                if(!_.isString(type)){
+                if(typeof type !== 'string'){
                     return undefined;
                 }
 
