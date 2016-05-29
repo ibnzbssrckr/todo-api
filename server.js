@@ -126,14 +126,18 @@ app.delete('/todos/:id', middleware.requireAuthentication, function(req, res) {
 });
 
 app.post('/users/', function(req, res) {
+
     var body = _.pick(req.body, 'email', 'password');
 
+    if(typeof body.email !== 'string' || typeof body.password !== 'string')
+        return res.sendStatus(400);
+
     db.user.create({
-        email: body.email.trim(),
+        email: body.email,
         password: body.password
     }).then(
         function(user) { res.json(user.toPublicJSON()); },
-        function(e) { res.status(400).json(e); }
+        function(e) { return res.status(400).json(e); }
     );
 });
 
