@@ -48,8 +48,8 @@ module.exports = function(sequelize, DataTypes) {
 
                 try {
                     var stringData = JSON.stringify({id: this.get('id'), type: type});
-                    var encryptedData = cryptojs.AES.encrypt(stringData, 'abc123!@#!').toString();
-                    return jwt.sign({ token: encryptedData }, 'qwerty098');
+                    var encryptedData = cryptojs.AES.encrypt(stringData, process.env.TOKEN_ENCRYPTION_KEY).toString();
+                    return jwt.sign({ token: encryptedData }, process.env.JWT_SIGNING_KEY);
                 } catch(e) {
                     console.error(e);
                     return undefined;
@@ -79,8 +79,8 @@ module.exports = function(sequelize, DataTypes) {
             findByToken : function(token) {
                 return new Promise(function(resolve, reject){
                     try {
-                        var decodedJWT = jwt.verify(token, 'qwerty098');
-                        var bytes = cryptojs.AES.decrypt(decodedJWT.token, 'abc123!@#!');
+                        var decodedJWT = jwt.verify(token, process.env.JWT_SIGNING_KEY);
+                        var bytes = cryptojs.AES.decrypt(decodedJWT.token, process.env.TOKEN_ENCRYPTION_KEY);
                         var tokenData = JSON.parse(bytes.toString(cryptojs.enc.Utf8));
 
                         user.findById(tokenData.id).then(function(user) {
