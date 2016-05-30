@@ -2,6 +2,7 @@ var request = require('supertest');
 var server = require('../server');
 var db = require('../db.js');
 var should = require('should');
+var SHA256 = require('crypto-js/sha256')
 
 before(function (done) {
     db.sequelize.sync({force: true}).then(function() {
@@ -26,6 +27,10 @@ describe('API', function () {
         }).then(function(user) {
             // retain the users token
             token1 = user.generateToken('authentication');
+            // add token to token table
+            db.token.create({
+                token: token1
+            });
             // Create a _todo to give the user
             db.todo.create({
                 description: 'Walk the Dog',
@@ -51,6 +56,10 @@ describe('API', function () {
                 password: 'password'
             }).then(function(user) {
                 token2 = user.generateToken('authentication');
+                // add token to token table
+                db.token.create({
+                    token: token2
+                });
                 done();
             });
         });
@@ -365,4 +374,37 @@ describe('API', function () {
                 .expect(404, done);
         });
     });
+    describe('DELETE /users/login', function() {
+        it('should not be able to consume with a valid token', function (done) {
+            request(server)
+                .delete('/users/login')
+                .expect('Content-Type', /text/)
+                .expect(401, done);
+        });
+        it('should log out a user with a valid token and remove from the db', function (done) {
+            request(server)
+                .delete('/users/login')
+                .set('Auth', token1)
+                .expect(204)
+                .end(function(err) {
+                   if(err) return done(err);
+                    // attempt to use the token again
+                    request(server)
+                        .get('/todos')
+                        .set('Auth', token1)
+                        .expect('Content-Type', /text/)
+                        .expect(401)
+                        .end(function(err) {
+                            if(err) return done(err);
+                            // Make sure token is removed from db
+                            db.token.findOne({where: { tokenHash: SHA256(token1).toString() }}).then(
+                                function(token) {
+                                    should.equal(token, null);
+                                    done();
+                                });
+                        });
+                });
+        });
+
+    })
 });
