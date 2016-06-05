@@ -152,7 +152,10 @@ app.post('/users/login', function(req, res) {
         });
 
     }).then(function(tokenInstance) {
-        return res.header('Auth', tokenInstance.get('token')).json(userInstance.toPublicJSON());
+        var resJSON = userInstance.toPublicJSON();
+        // Add token to response
+        resJSON.auth_token = tokenInstance.get('token');
+        return res.header('Auth', tokenInstance.get('token')).json(resJSON).status(200);
     }).catch(function(e) {
         res.sendStatus(401).json(e);
     })
