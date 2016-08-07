@@ -159,8 +159,8 @@ app.post('/users/login', function(req, res) {
         resJSON.auth_token = tokenInstance.get('token');
         return res.header('Auth', tokenInstance.get('token')).json(resJSON).status(200);
     }).catch(function(e) {
-        res.sendStatus(401).json(e);
-    })
+        res.status(401).json(e);
+    });
 });
 
 app.delete('/users/login', middleware.requireAuthentication, function(req, res) {
